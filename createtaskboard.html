@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <title>Home Page</title>
+    <title>Create Task Board</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -25,45 +25,23 @@
         </nav>
       </header>
       <main>
-        <div class="jumbotron">
-          <h1 class="display-4">Hello!</h1>
-          <p class="lead">This is a task management system that can deal with tasks of multiple users</p>
-          <hr class="my-4">
-          {% if user %}
-          <p>{{ welcome }} {{ user.email() }} to the application.</p>
-          {% else %}
-          <p>Welcome to the application. To access all feature you need to login.</p>
-          {% endif %}
-          <p class="lead">
-            <a class="btn btn-lg btn-outline-dark" href="{{ url }}">{{ url_string }}</a>
-          </p>
-        </div>
-        <div class="row">
-          {% if user %}
-          <div class="col-sm-3">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">New TaskBoard</h5>
-                <p class="card-text">To create a new task board</p>
-                <a href="/createtaskboard" class="btn btn-info">Create TaskBoard</a>
-              </div>
+        {% if user %}
+        <h2>Create New Task Board</h2>
+        <form method="post" action="/createtaskboard" class="form">
+        <fieldset>
+          <label>TaskBoard Name:</label>
+          <div class="input-group mb-3">
+            <input type="text" name="name" class="form-control" placeholder="TaskBoard Name" aria-label="TaskBoard Name" aria-describedby="button-addon2">
+            <div class="input-group-append">
+              <input type="submit" value="Create" name="button" class="btn btn-outline-secondary"/>
             </div>
           </div>
-          {% endif %}
-        </div>
-
-        <h4 class="mt-2">TaskBoards</h4>
-        <div class="row">
-          {% if taskboards %}
-          <div class="col-sm-3">
-            <div class="list-group">
-              {% for i in taskboards %}
-              <a href="/taskboards?id={{ i.key.id() }}" class="list-group-item list-group-item-action">{{ i.name }}</a>
-              {% endfor %}
-            </div>
-          </div>
-          {% endif %}
-        </div>
+        </fieldset>
+      </form>
+      <form action="/createtaskboard" method="post">
+        <input type="submit" value="Cancel" name="button" class="btn btn-outline-dark btn-lg mt-2"/>
+      </form>
+        {% endif %}
       </main>
     </div>
     <!-- JavaScript -->

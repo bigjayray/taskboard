@@ -5,6 +5,9 @@ from google.appengine.ext import ndb
 import os
 
 from myuser import MyUser
+from createtaskboard import CreateTaskBoard
+from taskboard import TaskBoard
+from taskboards import TaskBoards
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -39,12 +42,16 @@ class MainPage(webapp2.RequestHandler):
             url = users.create_login_url(self.request.uri)
             url_string = 'login'
 
+        query = TaskBoard.query().filter(TaskBoard.users == myuser_key)
+        taskboards = query.fetch()
+
         template_values = {
             'url' : url,
             'url_string' : url_string,
             'user' : user,
             'welcome' : welcome,
-            'myuser' : myuser
+            'myuser' : myuser,
+            'taskboards' : taskboards
         }
 
         template = JINJA_ENVIRONMENT.get_template('main.html')
@@ -54,4 +61,6 @@ class MainPage(webapp2.RequestHandler):
 # starts the web application and specify the full routing table here as well
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/createtaskboard', CreateTaskBoard),
+    ('/taskboards', TaskBoards)
 ], debug=True)
