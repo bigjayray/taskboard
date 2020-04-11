@@ -20,26 +20,83 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
+              {% if user %}
+              <a class="nav-item nav-link" href="/createtaskboard">Create TaskBoard</a>
+              <a class="nav-item nav-link" href="/viewtaskboard">View TaskBoards</a>
+              {% endif %}
             </div>
           </div>
         </nav>
       </header>
       <main>
         {% if user %}
+        {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Error!</strong> User does not exist.
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        {% endif %}
         <div class="card">
           <h5 class="card-header">Task Board</h5>
           <div class="card-body">
             <h5 class="card-title">{{ taskboard.name }}</h5>
+            {% if permission %}
             <p class="card-text">invite a user or add a task to the task board</p>
-            <form method="post" action="/adduser" class="form">
+            {% else %}
+            <p class="card-text">Add a task to the task board</p>
+            {% endif %}
+            {% if permission %}
+            <form method="post" action="/taskboards" class="form">
               <div class="input-group mb-3">
-                <input type="text" name="user_email" class="form-control" placeholder="user email" aria-label="user email" aria-describedby="button-addon2">
+                <input type="text" name="user_email" class="form-control" placeholder="user email" aria-label="user email" aria-describedby="button-addon2" required>
                 <div class="input-group-append">
-                  <input type="submit" value="Add User" name="button" class="btn btn-outline-secondary"/>
+                  <input type="submit" value="AddUser" name="button" class="btn btn-outline-secondary"/>
                 </div>
               </div>
-          </form>
-            <a href="#" class="btn btn-primary">Add Task</a>
+              <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
+            </form>
+            {% endif %}
+
+            <form method="post" action="/taskboards" class="form">
+              <div class="input-group mb-3">
+                <input type="text" name="title" class="form-control" placeholder="title" aria-label="title" aria-describedby="button-addon2" required>
+                <input type="date" name="due_date" class="form-control" placeholder="due date" aria-label="due date" aria-describedby="button-addon2" required>
+                <select class="custom-select" name="assigned_user">
+                  <option selected disabled>Assign User</option>
+                  {% for i in taskboard.users %}
+                  <option value="{{ i.urlsafe() }}">{{ i.get().email_address }}</option>
+                  {% endfor %}
+                </select>
+                <div class="input-group-append">
+                  <input type="submit" value="AddTask" name="button" class="btn btn-outline-secondary"/>
+                </div>
+              </div>
+              <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
+            </form>
+
+            {% if taskboard.tasks %}
+            <form method="post" action="/taskboards" class="form">
+              <div class="row">
+                <div class="col-sm-6">
+                  {% for i in taskboard.tasks %}
+                  <div class="input-group mb-3">
+                    <input type="text" name="task_name" class="form-control" value="{{ i.title }}" aria-label="task_name" aria-describedby="button-addon2" disabled>
+                    <input type="text" name="task_due_date" class="form-control" value="{{ i.due_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <input type="text" name="task_assigned_user" class="form-control" value="{{ i.assigned_user.get().email_address }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <div class="input-group-append">
+                      <input type="submit" value="Completed" name="button" class="btn btn-outline-secondary"/>
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
+            </form>
+            {% endif %}
+
+            <a href="/" class="btn btn-outline-dark btn-lg mt-2">Cancel</a>
           </div>
         </div>
         {% endif %}

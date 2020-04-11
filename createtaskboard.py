@@ -6,7 +6,7 @@ import os
 
 from myuser import MyUser
 from task import Task
-from taskboard import TaskBoard
+from myuser import TaskBoard
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -45,6 +45,8 @@ class CreateTaskBoard(webapp2.RequestHandler):
         #generates user key
         user_key = ndb.Key('MyUser', user.user_id())
 
+        myuser = user_key.get()
+
         # create a new taskboard object
         taskboard = TaskBoard()
 
@@ -61,7 +63,18 @@ class CreateTaskBoard(webapp2.RequestHandler):
 
             taskboard.put()
 
-            self.redirect('/')
+            id = taskboard.key.id()
+
+            taskboard_key = ndb.Key('TaskBoard', int(id))
+
+
+            myuser.taskboards.append(taskboard_key)
+            myuser.taskboards_created.append(taskboard_key)
+
+            myuser.put()
+
+
+            self.redirect('/viewtaskboard')
 
         elif action == 'Cancel':
             self.redirect('/')

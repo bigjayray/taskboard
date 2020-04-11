@@ -20,6 +20,10 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
+              {% if user %}
+              <a class="nav-item nav-link" href="/createtaskboard">Create TaskBoard</a>
+              <a class="nav-item nav-link" href="/viewtaskboard">View TaskBoards</a>
+              {% endif %}
             </div>
           </div>
         </nav>

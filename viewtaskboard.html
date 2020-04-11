@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
-    <title>Home Page</title>
+    <title>View TaskBoards</title>
   </head>
   <body>
     <div class="container-fluid">
@@ -20,50 +20,26 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-            {% if user %}
-            <a class="nav-item nav-link" href="/createtaskboard">Create TaskBoard</a>
-            <a class="nav-item nav-link" href="/viewtaskboard">View TaskBoards</a>
-            {% endif %}
+              {% if user %}
+              <a class="nav-item nav-link" href="/createtaskboard">Create TaskBoard</a>
+              <a class="nav-item nav-link" href="/viewtaskboard">View TaskBoards</a>
+              {% endif %}
             </div>
           </div>
         </nav>
       </header>
       <main>
-        <div class="jumbotron">
-          <h1 class="display-4">Hello!</h1>
-          <p class="lead">This is a task management system that can deal with tasks of multiple users</p>
-          <hr class="my-4">
-          {% if user %}
-          <p>{{ welcome }} {{ user.email() }} to the application.</p>
-          {% else %}
-          <p>Welcome to the application. To access all feature you need to login.</p>
-          {% endif %}
-          <p class="lead">
-            <a class="btn btn-lg btn-outline-dark" href="{{ url }}">{{ url_string }}</a>
-          </p>
-        </div>
+        <h4 class="mt-2">TaskBoards</h4>
         <div class="row">
-          {% if user %}
+          {% if taskboards %}
           <div class="col-sm-3">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">New TaskBoard</h5>
-                <p class="card-text">To create a new task board</p>
-                <a href="/createtaskboard" class="btn btn-info">Create</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-3">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">View TaskBoards</h5>
-                <p class="card-text">To view created task boards </p>
-                <a href="/viewtaskboard" class="btn btn-info">View</a>
-              </div>
+            <div class="list-group">
+              {% for i in taskboards %}
+              <a href="/taskboards?id={{ i.key.id() }}" class="list-group-item list-group-item-action">{{ i.name }}</a>
+              {% endfor %}
             </div>
           </div>
           {% endif %}
-        </div>
         </div>
       </main>
     </div>

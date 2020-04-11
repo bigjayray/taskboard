@@ -6,8 +6,9 @@ import os
 
 from myuser import MyUser
 from createtaskboard import CreateTaskBoard
-from taskboard import TaskBoard
+from myuser import TaskBoard
 from taskboards import TaskBoards
+from viewtaskboard import ViewTaskBoard
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -37,21 +38,20 @@ class MainPage(webapp2.RequestHandler):
             if myuser == None:
                 welcome = 'Welcome to the application'
                 myuser = MyUser(id=user.user_id())
+                myuser.email_address = user.email()
                 myuser.put()
         else:
             url = users.create_login_url(self.request.uri)
             url_string = 'login'
 
-        query = TaskBoard.query().filter(TaskBoard.users == myuser_key)
-        taskboards = query.fetch()
+
 
         template_values = {
             'url' : url,
             'url_string' : url_string,
             'user' : user,
             'welcome' : welcome,
-            'myuser' : myuser,
-            'taskboards' : taskboards
+            'myuser' : myuser
         }
 
         template = JINJA_ENVIRONMENT.get_template('main.html')
@@ -62,5 +62,6 @@ class MainPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createtaskboard', CreateTaskBoard),
-    ('/taskboards', TaskBoards)
+    ('/taskboards', TaskBoards),
+    ('/viewtaskboard', ViewTaskBoard)
 ], debug=True)

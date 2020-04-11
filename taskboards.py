@@ -6,7 +6,8 @@ import os
 
 from myuser import MyUser
 from task import Task
-from taskboard import TaskBoard
+from myuser import TaskBoard
+from datetime import datetime
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -25,14 +26,118 @@ class TaskBoards(webapp2.RequestHandler):
         # gets id passed in the url
         id = self.request.get('id')
 
-        # generates key
-        key = ndb.Key('TaskBoard', int(id))
+        if id == '':
 
-        # gets TaskBoard
-        taskboard = key.get()
+            self.redirect('/viewtaskboard')
 
-        # selection statement for user
-        if user:
+        else:
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            user_key = ndb.Key('MyUser', user.user_id())
+            myuser = user_key.get()
+
+            permission = False
+
+            taskboards_created_keys = myuser.taskboards_created
+            for i in taskboards_created_keys:
+                if i == taskboard.key:
+                    permission = True
+
+            # selection statement for user
+            if user:
+
+                # values to be rendered to the createtaskboard.html page
+                template_values = {
+                    'user' : user,
+                    'taskboard' : taskboard,
+                    'permission' : permission
+                }
+
+                template = JINJA_ENVIRONMENT.get_template('taskboards.html')
+                self.response.write(template.render(template_values))
+            else:
+                self.redirect('/')
+
+    # called when you submit a web form
+    def post(self):
+        self.response.headers['Content-Type'] = 'text/html'
+
+        # gets current user
+        user = users.get_current_user()
+
+        # get value of button clicked
+        action = self.request.get('button')
+
+        # selection statement for button
+        if action == 'AddUser':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+            user_email = self.request.get('user_email')
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+            taskboard_key = ndb.Key('TaskBoard', int(id))
+
+            q = MyUser.query().filter(MyUser.email_address == user_email)
+
+            if q.count() == 0:
+                error = True
+
+                template_values = {
+                    'user' : user,
+                    'taskboard' : taskboard,
+                    'error' : error
+                }
+
+                template = JINJA_ENVIRONMENT.get_template('taskboards.html')
+                self.response.write(template.render(template_values))
+            else:
+
+                for i in q.iter(keys_only=True):
+                    user_key = i
+
+                taskboard.users.append(user_key)
+
+                myuser = user_key.get()
+                myuser.taskboards.append(taskboard_key)
+
+                taskboard.put()
+                myuser.put()
+
+                template_values = {
+                    'user' : user,
+                    'taskboard' : taskboard
+                }
+
+                template = JINJA_ENVIRONMENT.get_template('taskboards.html')
+                self.response.write(template.render(template_values))
+
+        if action == 'AddTask':
+            #create a new task
+            task = Task()
+
+            # gets id passed in the form
+            id = self.request.get('id')
+
+            #add form values to task
+            task.title = self.request.get('title')
+            k_str = self.request.get('assigned_user')
+            task.assigned_user = ndb.Key(urlsafe=k_str)
+            due_date = self.request.get('due_date')
+
+            task.due_date = datetime.strptime(due_date, "%Y-%m-%d")
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            taskboard.tasks.append(task)
+
+            taskboard.completion = False
+
+            taskboard.put()
 
             # values to be rendered to the createtaskboard.html page
             template_values = {
@@ -42,36 +147,21 @@ class TaskBoards(webapp2.RequestHandler):
 
             template = JINJA_ENVIRONMENT.get_template('taskboards.html')
             self.response.write(template.render(template_values))
-        else:
-            self.redirect('/')
 
-    # called when you submit a web form
-    def post(self):
-        self.response.headers['Content-Type'] = 'text/html'
+        if action == 'AssignTask':
 
-        # gets current user
-        user = users.get_current_user()
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
 
-        #generates user key
-        user_key = ndb.Key('MyUser', user.user_id())
+            # values to be rendered to the createtaskboard.html page
+            template_values = {
+            'user' : user,
+            'taskboard' : taskboard
+            }
 
-        # create a new taskboard object
-        taskboard = TaskBoard()
+            template = JINJA_ENVIRONMENT.get_template('taskboards.html')
+            self.response.write(template.render(template_values))
 
-        # get value of button clicked
-        action = self.request.get('button')
-
-        # selection statement for button
-        if action == 'Create':
-
-            taskboard.users.append(user_key)
-
-            # adds form values to the ev object
-            taskboard.name = self.request.get('name')
-
-            taskboard.put()
-
-            self.redirect('/')
-
-        elif action == 'Cancel':
-            self.redirect('/')
+        #
+        # elif action == 'Cancel':
+        #     self.redirect('/')
