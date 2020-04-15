@@ -26,6 +26,9 @@ class ViewTaskBoard(webapp2.RequestHandler):
 
         taskboards = ndb.get_multi(taskboards_keys)
 
+        if taskboards == []:
+            self.redirect('/createtaskboard')
+
         template_values = {
             'user' : user,
             'taskboards' : taskboards

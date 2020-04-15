@@ -35,6 +35,19 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            n_tasks = len(taskboard.tasks)
+            n_ctasks = 0
+            n_atasks = 0
+            n_ctaskst = 0
+            for i in taskboard.tasks:
+                if i.completion == True:
+                    n_ctasks += 1
+                    today = datetime.date(datetime.now())
+                    if datetime.date(i.completion_date) == today:
+                        n_ctaskst += 1
+                else:
+                    n_atasks += 1
+
             user_key = ndb.Key('MyUser', user.user_id())
             myuser = user_key.get()
 
@@ -48,11 +61,18 @@ class TaskBoards(webapp2.RequestHandler):
             # selection statement for user
             if user:
 
+                q = MyUser.query().fetch()
+
                 # values to be rendered to the createtaskboard.html page
                 template_values = {
                     'user' : user,
                     'taskboard' : taskboard,
-                    'permission' : permission
+                    'permission' : permission,
+                    'q' : q,
+                    'n_tasks' : n_tasks,
+                    'n_ctasks' : n_ctasks,
+                    'n_atasks' : n_atasks,
+                    'n_ctaskst' : n_ctaskst
                 }
 
                 template = JINJA_ENVIRONMENT.get_template('taskboards.html')
@@ -66,6 +86,8 @@ class TaskBoards(webapp2.RequestHandler):
 
         # gets current user
         user = users.get_current_user()
+        u_key = ndb.Key('MyUser', user.user_id())
+        u = u_key.get()
 
         # get value of button clicked
         action = self.request.get('button')
@@ -75,45 +97,26 @@ class TaskBoards(webapp2.RequestHandler):
 
             # gets id passed in the form
             id = self.request.get('id')
-            user_email = self.request.get('user_email')
+            k_str = self.request.get('user_id')
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
             taskboard_key = ndb.Key('TaskBoard', int(id))
+            user_key = ndb.Key(urlsafe=k_str)
+            myuser = user_key.get()
 
-            q = MyUser.query().filter(MyUser.email_address == user_email)
+            for i in taskboard.users:
+                if i == user_key:
+                    self.redirect('/taskboards?id='+id)
+                    return
 
-            if q.count() == 0:
-                error = True
+            taskboard.users.append(user_key)
+            myuser.taskboards.append(taskboard_key)
 
-                template_values = {
-                    'user' : user,
-                    'taskboard' : taskboard,
-                    'error' : error
-                }
+            taskboard.put()
+            myuser.put()
 
-                template = JINJA_ENVIRONMENT.get_template('taskboards.html')
-                self.response.write(template.render(template_values))
-            else:
-
-                for i in q.iter(keys_only=True):
-                    user_key = i
-
-                taskboard.users.append(user_key)
-
-                myuser = user_key.get()
-                myuser.taskboards.append(taskboard_key)
-
-                taskboard.put()
-                myuser.put()
-
-                template_values = {
-                    'user' : user,
-                    'taskboard' : taskboard
-                }
-
-                template = JINJA_ENVIRONMENT.get_template('taskboards.html')
-                self.response.write(template.render(template_values))
+            self.redirect('/taskboards?id='+id)
 
         if action == 'AddTask':
             #create a new task
@@ -133,35 +136,151 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            for i in taskboard.tasks:
+                if i.title == task.title:
+                    self.redirect('/taskboards?id='+id)
+                    return
+
             taskboard.tasks.append(task)
 
             taskboard.completion = False
 
             taskboard.put()
 
-            # values to be rendered to the createtaskboard.html page
-            template_values = {
-                'user' : user,
-                'taskboard' : taskboard
-            }
+            self.redirect('/taskboards?id='+id)
 
-            template = JINJA_ENVIRONMENT.get_template('taskboards.html')
-            self.response.write(template.render(template_values))
+        if action == 'Completed':
 
-        if action == 'AssignTask':
+            # gets id passed in the form
+            id = self.request.get('id')
+            index = int(self.request.get('index'))
+
+            time = datetime.now()
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
-            # values to be rendered to the createtaskboard.html page
-            template_values = {
-            'user' : user,
-            'taskboard' : taskboard
-            }
+            taskboard.tasks[index - 1].completion = True
+            taskboard.tasks[index - 1].completion_date = time
 
-            template = JINJA_ENVIRONMENT.get_template('taskboards.html')
-            self.response.write(template.render(template_values))
+            taskboard.put()
 
-        #
-        # elif action == 'Cancel':
-        #     self.redirect('/')
+
+            self.redirect('/taskboards?id='+id)
+
+        if action == 'Delete':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+            index = int(self.request.get('index'))
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            del taskboard.tasks[index - 1]
+
+            taskboard.put()
+
+
+            self.redirect('/taskboards?id='+id)
+
+        if action == 'Edit':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+            index = int(self.request.get('index'))
+            k_str = self.request.get('assigned_user')
+            due_date = self.request.get('due_date')
+            title = self.request.get('title')
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            # if taskboard.tasks[index - 1].title == title:
+            #     self.redirect('/viewtaskboard')
+            #     return
+
+            taskboard.tasks[index - 1].title = title
+            taskboard.tasks[index - 1].due_date = datetime.strptime(due_date, "%Y-%m-%d")
+            taskboard.tasks[index - 1].assigned_user = ndb.Key(urlsafe=k_str)
+
+            taskboard.put()
+
+
+            self.redirect('/taskboards?id='+id)
+
+        if action == 'Change':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            name = self.request.get('name')
+
+            for i in u.taskboards:
+                if i.get().name == name:
+                    self.redirect('/taskboards?id='+id)
+                    return
+
+            taskboard.name = name
+
+            taskboard.put()
+
+            self.redirect('/taskboards?id='+id)
+
+        if action == 'Drop':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+            k_str = self.request.get('assigned_user')
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            key = ndb.Key(urlsafe=k_str)
+            index = 0
+            for i in taskboard.users:
+                if i == key:
+                    del taskboard.users[index]
+                index += 1
+
+            for i in taskboard.tasks:
+                if i.assigned_user == key:
+                    i.assigned_user = None
+
+            index = 0
+            for i in u.taskboards:
+                if i == taskboard.key:
+                    del u.taskboards[index]
+                index += 1
+
+            taskboard.put()
+
+
+            self.redirect('/taskboards?id='+id)
+
+        if action == 'DeleteTaskboard':
+
+            # gets id passed in the form
+            id = self.request.get('id')
+
+            # gets TaskBoard
+            taskboard = TaskBoard.get_by_id(int(id))
+
+            index = 0
+            for i in u.taskboards:
+                if i == taskboard.key:
+                    del u.taskboards[index]
+                index += 1
+
+            u.put()
+            taskboard.key.delete()
+
+
+            self.redirect('/')
+
+
+        elif action == 'Cancel':
+            self.redirect('/')

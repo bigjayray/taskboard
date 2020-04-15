@@ -59,17 +59,20 @@ class CreateTaskBoard(webapp2.RequestHandler):
             taskboard.users.append(user_key)
 
             # adds form values to the ev object
-            taskboard.name = self.request.get('name')
+            name = self.request.get('name')
+
+            for i in myuser.taskboards:
+                if i.get().name == name:
+                    self.redirect('/')
+                    return
+
+            taskboard.name = name
 
             taskboard.put()
 
-            id = taskboard.key.id()
 
-            taskboard_key = ndb.Key('TaskBoard', int(id))
-
-
-            myuser.taskboards.append(taskboard_key)
-            myuser.taskboards_created.append(taskboard_key)
+            myuser.taskboards.append(taskboard.key)
+            myuser.taskboards_created.append(taskboard.key)
 
             myuser.put()
 

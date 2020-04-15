@@ -5,4 +5,5 @@ class Task(ndb.Model):
     title = ndb.StringProperty(required=True)
     due_date = ndb.DateProperty(required=True)
     completion = ndb.BooleanProperty(default=False)
+    completion_date = ndb.DateTimeProperty()
     assigned_user = ndb.KeyProperty(kind='MyUser')
