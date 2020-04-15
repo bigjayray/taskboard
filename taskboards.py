@@ -251,9 +251,9 @@ class TaskBoards(webapp2.RequestHandler):
                     i.assigned_user = None
 
             index = 0
-            for i in u.taskboards:
+            for i in key.get().taskboards:
                 if i == taskboard.key:
-                    del u.taskboards[index]
+                    del key.get().taskboards[index]
                 index += 1
 
             taskboard.put()

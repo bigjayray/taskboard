@@ -112,7 +112,7 @@
             <form method="post" action="/taskboards" class="form">
               <div class="input-group mb-3">
                 <select class="custom-select" name="user_id" required>
-                  <option selected disabled>Assign User</option>
+                  <option selected disabled>Invite User</option>
                   {% for i in q %}
                   <option value="{{ i.key.urlsafe() }}">{{ i.email_address }}</option>
                   {% endfor %}
@@ -159,7 +159,7 @@
                       {% if i.assigned_user == None %}
                       <option selected disabled>Not Assigned</option>
                       {% else %}
-                      <option selected>{{ i.assigned_user.get().email_address }}</option>
+                      <option selected value="{{ i.assigned_user.urlsafe() }}">{{ i.assigned_user.get().email_address }}</option>
                       {% endif %}
                       {% for i in taskboard.users %}
                       <option value="{{ i.urlsafe() }}">{{ i.get().email_address }}</option>
@@ -167,7 +167,7 @@
                     </select>
                     {% if i.completion %}
                     <input type="text" name="" class="form-control" value="Completed" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
-                    <input type="text" name="" class="form-control" value="Completion: {{ i.completion_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <input type="text" name="" class="form-control" value="Date: {{ i.completion_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
                     {% endif %}
                     <div class="input-group-append">
                       <input type="submit" value="Completed" name="button" class="btn btn-outline-secondary"/>
