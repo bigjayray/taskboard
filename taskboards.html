@@ -13,6 +13,7 @@
   <body>
     <div class="container-fluid">
       <header>
+        <!-- navigation bar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
           <a class="navbar-brand" href="/">Task Management System</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,20 +31,14 @@
       </header>
       <main>
         {% if user %}
-        {% if error %}
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          <strong>Error!</strong> User does not exist.
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        {% endif %}
+        <!-- card containing taskboard details  -->
         <div class="card">
           <h5 class="card-header">Task Board</h5>
           <div class="card-body">
             <h5 class="card-title">{{ taskboard.name }}</h5>
 
             <!-- Button trigger modal -->
+            <!-- button to edit taskboard -->
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
               Edit Board
             </button>
@@ -68,9 +63,11 @@
                     </div>
                       <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
                     </form>
+                    <!-- checks if user is the creator of the taskboard -->
                     {% if permission %}
                     <form method="post" action="/taskboards" class="form">
                     <div class="input-group mb-3">
+                      <!-- list of users -->
                       <select class="custom-select" name="assigned_user" required>
                         <option selected disabled>Select User</option>
                         {% for i in taskboard.users %}
@@ -93,6 +90,7 @@
                       <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
                     </form>
                     {% endif %}
+                    <small class="form-text text-muted">To delete taskboard all users and tasks must be removed.</small>
                   </div>
                 </div>
               </div>
@@ -149,11 +147,36 @@
             {% if taskboard.tasks %}
             <h5>Tasks</h5>
             {% for i in taskboard.tasks %}
+            {% if i.completion %}
             <form method="post" action="/taskboards" class="form">
               <div class="row">
                 <div class="col-sm-12">
                   <div class="input-group mb-3">
+                    <input type="text" name="title" class="form-control" value="{{ i.title }}" aria-label="task_name" aria-describedby="button-addon2" disabled>
+                    <input type="date" name="due_date" class="form-control" value="{{ i.due_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <input type="text" class="form-control" value="{{ i.assigned_user.get().email_address }}" aria-label="task_assigned_user" aria-describedby="button-addon2" disabled>
+                    <input type="text" name="assigned_user" class="form-control" value="{{ i.assigned_user.urlsafe() }}" aria-label="task_assigned_user" aria-describedby="button-addon2" hidden>
+                    <input type="text" name="" class="form-control" value="Completed" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <input type="text" name="" class="form-control" value="Date: {{ i.completion_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    <div class="input-group-append">
+                      <input type="submit" value="Delete" name="button" class="btn btn-outline-secondary"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" value="{{ loop.index }}" name="index"/>
+              <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
+            </form>
+            {% else %}
+            <form method="post" action="/taskboards" class="form">
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="input-group mb-3">
+                    {% if i.assigned_user == None %}
+                    <input type="text" name="title" class="form-control text-danger" value="{{ i.title }}" aria-label="task_name" aria-describedby="button-addon2" required>
+                    {% else %}
                     <input type="text" name="title" class="form-control" value="{{ i.title }}" aria-label="task_name" aria-describedby="button-addon2" required>
+                    {% endif %}
                     <input type="date" name="due_date" class="form-control" value="{{ i.due_date }}" aria-label="task_due_date" aria-describedby="button-addon2" required>
                     <select class="custom-select" name="assigned_user" required>
                       {% if i.assigned_user == None %}
@@ -165,10 +188,6 @@
                       <option value="{{ i.urlsafe() }}">{{ i.get().email_address }}</option>
                       {% endfor %}
                     </select>
-                    {% if i.completion %}
-                    <input type="text" name="" class="form-control" value="Completed" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
-                    <input type="text" name="" class="form-control" value="Date: {{ i.completion_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
-                    {% endif %}
                     <div class="input-group-append">
                       <input type="submit" value="Completed" name="button" class="btn btn-outline-secondary"/>
                       <input type="submit" value="Edit" name="button" class="btn btn-outline-secondary"/>
@@ -180,6 +199,7 @@
               <input type="hidden" value="{{ loop.index }}" name="index"/>
               <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
             </form>
+            {% endif %}
             {% endfor %}
             {% endif %}
 

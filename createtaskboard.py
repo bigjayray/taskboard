@@ -15,7 +15,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 )
 
 class CreateTaskBoard(webapp2.RequestHandler):
-    # get method called on page when page is instantiated
+    # get method called by webapp2 when page is instantiated
     def get(self):
         self.response.headers['Content-Typ'] = 'text/html'
 
@@ -33,9 +33,10 @@ class CreateTaskBoard(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('createtaskboard.html')
             self.response.write(template.render(template_values))
         else:
+            #if no logged in user redirect to home page
             self.redirect('/')
 
-    # called when you submit a web form
+    # called when form is submitted on createtaskboard.html page
     def post(self):
         self.response.headers['Content-Type'] = 'text/html'
 
@@ -45,10 +46,13 @@ class CreateTaskBoard(webapp2.RequestHandler):
         #generates user key
         user_key = ndb.Key('MyUser', user.user_id())
 
+        #generates user
         myuser = user_key.get()
 
         # create a new taskboard object
         taskboard = TaskBoard()
+        #do you want us to implement parent child relationship like taskboard = TaskBoard(parent=user_key)
+        #had errors retrieving taskboard keys implementing that
 
         # get value of button clicked
         action = self.request.get('button')
@@ -56,28 +60,39 @@ class CreateTaskBoard(webapp2.RequestHandler):
         # selection statement for button
         if action == 'Create':
 
-            taskboard.users.append(user_key)
-
-            # adds form values to the ev object
+            # gets taskboard name from form
             name = self.request.get('name')
 
+            # loops through all taskboards created by user and added by user
             for i in myuser.taskboards:
+                # if taskboard found with same name display error message
                 if i.get().name == name:
-                    self.redirect('/')
+
+                    error = True
+                    # values to be rendered to the createtaskboard.html page
+                    template_values = {
+                        'user' : user,
+                        'error' : error
+                    }
+
+                    template = JINJA_ENVIRONMENT.get_template('createtaskboard.html')
+                    self.response.write(template.render(template_values))
                     return
 
+            # add form values to taskboard attributes
+            taskboard.users.append(user_key)
             taskboard.name = name
+            taskboard.creator = user_key
 
+            # saves taskboard to datastore
             taskboard.put()
 
-
+            # add taskboard to user attributes
             myuser.taskboards.append(taskboard.key)
             myuser.taskboards_created.append(taskboard.key)
 
+            #saves updated user object
             myuser.put()
 
-
+            #redirects user to the page with all taskboards listed
             self.redirect('/viewtaskboard')
-
-        elif action == 'Cancel':
-            self.redirect('/')

@@ -13,6 +13,7 @@
   <body>
     <div class="container-fluid">
       <header>
+        <!-- navigation bar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
           <a class="navbar-brand" href="/">Task Management System</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,9 +40,11 @@
           <p>Welcome to the application. To access all feature you need to login.</p>
           {% endif %}
           <p class="lead">
+            <!-- login / logout button -->
             <a class="btn btn-lg btn-outline-dark" href="{{ url }}">{{ url_string }}</a>
           </p>
         </div>
+        <!-- cards with links to create taskboard and view taskboards -->
         <div class="row">
           {% if user %}
           <div class="col-sm-3">

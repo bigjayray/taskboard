@@ -1,3 +1,4 @@
+#imports
 import webapp2
 import jinja2
 from google.appengine.api import users
@@ -16,7 +17,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 )
 
 class TaskBoards(webapp2.RequestHandler):
-    # get method called on page when page is instantiated
+    # get method called by webapp2 when page is instantiated
     def get(self):
         self.response.headers['Content-Typ'] = 'text/html'
 
@@ -26,8 +27,9 @@ class TaskBoards(webapp2.RequestHandler):
         # gets id passed in the url
         id = self.request.get('id')
 
+        #selection if no id is in url
         if id == '':
-
+            #redirects to view taskboard page
             self.redirect('/viewtaskboard')
 
         else:
@@ -35,10 +37,12 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            #task stats
             n_tasks = len(taskboard.tasks)
             n_ctasks = 0
             n_atasks = 0
             n_ctaskst = 0
+            #calculate stats
             for i in taskboard.tasks:
                 if i.completion == True:
                     n_ctasks += 1
@@ -48,19 +52,25 @@ class TaskBoards(webapp2.RequestHandler):
                 else:
                     n_atasks += 1
 
-            user_key = ndb.Key('MyUser', user.user_id())
-            myuser = user_key.get()
-
-            permission = False
-
-            taskboards_created_keys = myuser.taskboards_created
-            for i in taskboards_created_keys:
-                if i == taskboard.key:
-                    permission = True
-
             # selection statement for user
             if user:
 
+                #get user key
+                user_key = ndb.Key('MyUser', user.user_id())
+                #gets user
+                myuser = user_key.get()
+
+                #initializes permisiion
+                permission = False
+
+                taskboards_created_keys = myuser.taskboards_created
+
+                #loops through taskboards created by user to find if user created current taskboard
+                for i in taskboards_created_keys:
+                    if i == taskboard.key:
+                        permission = True
+
+                #querys data store to find all users
                 q = MyUser.query().fetch()
 
                 # values to be rendered to the createtaskboard.html page
@@ -78,6 +88,7 @@ class TaskBoards(webapp2.RequestHandler):
                 template = JINJA_ENVIRONMENT.get_template('taskboards.html')
                 self.response.write(template.render(template_values))
             else:
+                #if no user redirect back to home page
                 self.redirect('/')
 
     # called when you submit a web form
@@ -92,32 +103,39 @@ class TaskBoards(webapp2.RequestHandler):
         # get value of button clicked
         action = self.request.get('button')
 
-        # selection statement for button
+        # selection statement for if add user button is clicked
         if action == 'AddUser':
 
-            # gets id passed in the form
+            # gets for attributes
             id = self.request.get('id')
             k_str = self.request.get('user_id')
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
             taskboard_key = ndb.Key('TaskBoard', int(id))
+            #gets user key
             user_key = ndb.Key(urlsafe=k_str)
             myuser = user_key.get()
 
+            #loops through taskboard users
             for i in taskboard.users:
+                #selection statement for if user already in taskboard
                 if i == user_key:
                     self.redirect('/taskboards?id='+id)
                     return
 
+            #add taskboard and user attributes
             taskboard.users.append(user_key)
             myuser.taskboards.append(taskboard_key)
 
+            #saves taskboard and users
             taskboard.put()
             myuser.put()
 
+            #redirects back to taskboard
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if addtask button is clicked
         if action == 'AddTask':
             #create a new task
             task = Task()
@@ -130,25 +148,30 @@ class TaskBoards(webapp2.RequestHandler):
             k_str = self.request.get('assigned_user')
             task.assigned_user = ndb.Key(urlsafe=k_str)
             due_date = self.request.get('due_date')
-
+            #formats due date in form
             task.due_date = datetime.strptime(due_date, "%Y-%m-%d")
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            # loops through all tasks in taskboard
             for i in taskboard.tasks:
+                # if task found with same name redirect back to page
                 if i.title == task.title:
                     self.redirect('/taskboards?id='+id)
                     return
 
+            # add taskboard attributes
             taskboard.tasks.append(task)
-
             taskboard.completion = False
 
+            #save taskboard
             taskboard.put()
 
+            #redirect back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if completed button is clicked
         if action == 'Completed':
 
             # gets id passed in the form
@@ -269,14 +292,26 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            if (taskboard.users != [] ) or (taskboard.tasks != []):
+                print("got here")
+                self.redirect('/taskboards?id='+id)
+                return
+
             index = 0
             for i in u.taskboards:
                 if i == taskboard.key:
                     del u.taskboards[index]
                 index += 1
 
+            index = 0
+            for i in u.taskboards_created:
+                if i == taskboard.key:
+                    del u.taskboards_created[index]
+                index += 1
+
+
             u.put()
-            taskboard.key.delete()
+            # taskboard.key.delete()
 
 
             self.redirect('/')

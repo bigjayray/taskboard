@@ -13,6 +13,7 @@
   <body>
     <div class="container-fluid">
       <header>
+        <!-- navigation bar -->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
           <a class="navbar-brand" href="/">Task Management System</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,21 +31,34 @@
       </header>
       <main>
         {% if user %}
-        <h2>Create New Task Board</h2>
-        <form method="post" action="/createtaskboard" class="form">
-        <fieldset>
-          <label>TaskBoard Name:</label>
-          <div class="input-group mb-3">
-            <input type="text" name="name" class="form-control" placeholder="TaskBoard Name" aria-label="TaskBoard Name" aria-describedby="button-addon2">
-            <div class="input-group-append">
-              <input type="submit" value="Create" name="button" class="btn btn-outline-secondary"/>
-            </div>
+        <!-- card with form and instructions to create a new taskboard -->
+        <div class="card">
+          <h3 class="card-header">New TaskBoard</h3>
+          {% if error %}
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error!</strong> Taskboard with same name already exists.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
-        </fieldset>
-      </form>
-      <form action="/createtaskboard" method="post">
-        <input type="submit" value="Cancel" name="button" class="btn btn-outline-dark btn-lg mt-2"/>
-      </form>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">Create a New TaskBoard</h5>
+            <p class="card-text">To create a taskboard board add a taskboard name and click on create</p>
+            <form method="post" action="/createtaskboard" class="form">
+            <fieldset>
+              <label>TaskBoard Name:</label>
+              <div class="input-group mb-3">
+                <input type="text" name="name" class="form-control" placeholder="TaskBoard Name" aria-label="TaskBoard Name" aria-describedby="button-addon2">
+                <div class="input-group-append">
+                  <input type="submit" value="Create" name="button" class="btn btn-outline-secondary"/>
+                </div>
+              </div>
+            </fieldset>
+          </form>
+          <a href="/"><button type="button" name="button" class="btn btn-outline-dark btn-lg mt-2">Cancel</button></a>
+          </div>
+        </div>
         {% endif %}
       </main>
     </div>

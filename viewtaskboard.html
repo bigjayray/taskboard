@@ -29,18 +29,28 @@
         </nav>
       </header>
       <main>
-        <h4 class="mt-2">TaskBoards</h4>
-        <div class="row">
-          {% if taskboards %}
-          <div class="col-sm-3">
-            <div class="list-group">
-              {% for i in taskboards %}
-              <a href="/taskboards?id={{ i.key.id() }}" class="list-group-item list-group-item-action">{{ i.name }}</a>
-              {% endfor %}
+        {% if user %}
+        <!-- card with form and instructions to create a new taskboard -->
+        <div class="card">
+          <h3 class="card-header">TaskBoards</h3>
+          <div class="card-body">
+            <h5 class="card-title">All TaskBoard</h5>
+            <p class="card-text">Below is a list of all taskboard created and invited. Click into a taskboard to display taskboard</p>
+            <div class="row">
+              {% if taskboards %}
+              <div class="col-sm-4">
+                <div class="list-group">
+                  {% for i in taskboards %}
+                  <a href="/taskboards?id={{ i.key.id() }}" class="list-group-item list-group-item-action">{{ i.name }}</a>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
             </div>
+          <a href="/"><button type="button" name="button" class="btn btn-outline-dark btn-lg mt-4">Cancel</button></a>
           </div>
-          {% endif %}
         </div>
+        {% endif %}
       </main>
     </div>
     <!-- JavaScript -->
