@@ -16,6 +16,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True
 )
 
+#TaskBoard class
 class TaskBoards(webapp2.RequestHandler):
     # get method called by webapp2 when page is instantiated
     def get(self):
@@ -174,42 +175,49 @@ class TaskBoards(webapp2.RequestHandler):
         # selection statement for if completed button is clicked
         if action == 'Completed':
 
-            # gets id passed in the form
+            # gets values passed in form
             id = self.request.get('id')
             index = int(self.request.get('index'))
 
+            #gets current time
             time = datetime.now()
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            #adds form values to task
             taskboard.tasks[index - 1].completion = True
             taskboard.tasks[index - 1].completion_date = time
 
+            # saves taskboard
             taskboard.put()
 
-
+            # redirects back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if delete button is clicked
         if action == 'Delete':
 
-            # gets id passed in the form
+            # gets values passed in form
             id = self.request.get('id')
             index = int(self.request.get('index'))
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            # deletes task
             del taskboard.tasks[index - 1]
 
+            # saves taskboard
             taskboard.put()
 
-
+            # redirects back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if edit button is clicked
         if action == 'Edit':
 
-            # gets id passed in the form
+            # gets values passed in form
             id = self.request.get('id')
             index = int(self.request.get('index'))
             k_str = self.request.get('assigned_user')
@@ -219,19 +227,27 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
-            # if taskboard.tasks[index - 1].title == title:
-            #     self.redirect('/viewtaskboard')
-            #     return
+            # validates taskboard title to avoid duplicates
+            if taskboard.tasks[index - 1].title != title:
+                # loops through tasks
+                for i in taskboard.tasks:
+                    if i.title == title:
+                        #redirects back to page
+                        self.redirect('/taskboards?id='+id)
+                        return
 
+            #adds form values to task
             taskboard.tasks[index - 1].title = title
             taskboard.tasks[index - 1].due_date = datetime.strptime(due_date, "%Y-%m-%d")
             taskboard.tasks[index - 1].assigned_user = ndb.Key(urlsafe=k_str)
 
+            # saves taskboard
             taskboard.put()
 
-
+            # redirects back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if change button is clicked
         if action == 'Change':
 
             # gets id passed in the form
@@ -240,63 +256,81 @@ class TaskBoards(webapp2.RequestHandler):
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            # gets values passed in form
             name = self.request.get('name')
 
+            #validates form value
+            if name == '':
+                self.redirect('/taskboards?id='+id)
+
+            #validates taskboard name to avoid duplicate names
             for i in u.taskboards:
                 if i.get().name == name:
                     self.redirect('/taskboards?id='+id)
                     return
 
+            #updates taskboard name
             taskboard.name = name
 
+            #saves taskboard
             taskboard.put()
 
+            # redirects back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if drop button is clicked
         if action == 'Drop':
 
-            # gets id passed in the form
+            # gets values passed in form
             id = self.request.get('id')
             k_str = self.request.get('assigned_user')
+            key = ndb.Key(urlsafe=k_str)
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
-            key = ndb.Key(urlsafe=k_str)
+            #removes user from taskboard
             index = 0
             for i in taskboard.users:
                 if i == key:
                     del taskboard.users[index]
                 index += 1
 
+            #unassgins tasks assigned to user
             for i in taskboard.tasks:
                 if i.assigned_user == key:
                     i.assigned_user = None
 
+            #removes users access to taskboard
+            usr = key.get()
             index = 0
-            for i in key.get().taskboards:
+            for i in usr.taskboards:
                 if i == taskboard.key:
-                    del key.get().taskboards[index]
+                    del usr.taskboards[index]
                 index += 1
 
+            #update taskboard and user
             taskboard.put()
+            usr.put()
 
-
+            # redirects back to page
             self.redirect('/taskboards?id='+id)
 
+        # selection statement for if deletetaskboard button is clicked
         if action == 'DeleteTaskboard':
 
-            # gets id passed in the form
+            # gets values passed in form
             id = self.request.get('id')
 
             # gets TaskBoard
             taskboard = TaskBoard.get_by_id(int(id))
 
+            #confirms if users or tasks still exist
             if (taskboard.users != [] ) or (taskboard.tasks != []):
-                print("got here")
                 self.redirect('/taskboards?id='+id)
                 return
 
+            #removes taskboard from user
             index = 0
             for i in u.taskboards:
                 if i == taskboard.key:
@@ -309,13 +343,10 @@ class TaskBoards(webapp2.RequestHandler):
                     del u.taskboards_created[index]
                 index += 1
 
-
+            # updates user
             u.put()
-            # taskboard.key.delete()
+            #delete taskboard
+            taskboard.key.delete()
 
-
-            self.redirect('/')
-
-
-        elif action == 'Cancel':
+            # redirects back to homepage
             self.redirect('/')

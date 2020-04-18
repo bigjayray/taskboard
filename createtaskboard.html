@@ -45,16 +45,17 @@
           <div class="card-body">
             <h5 class="card-title">Create a New TaskBoard</h5>
             <p class="card-text">To create a taskboard board add a taskboard name and click on create</p>
-            <form method="post" action="/createtaskboard" class="form">
+            <form method="post" action="/createtaskboard" class="form mb-4">
             <fieldset>
               <label>TaskBoard Name:</label>
-              <div class="input-group mb-3">
+              <div class="input-group mb-1">
                 <input type="text" name="name" class="form-control" placeholder="TaskBoard Name" aria-label="TaskBoard Name" aria-describedby="button-addon2">
                 <div class="input-group-append">
                   <input type="submit" value="Create" name="button" class="btn btn-outline-secondary"/>
                 </div>
               </div>
             </fieldset>
+            <small class="form-text text-muted">Cannot add taskboards with same name</small>
           </form>
           <a href="/"><button type="button" name="button" class="btn btn-outline-dark btn-lg mt-2">Cancel</button></a>
           </div>

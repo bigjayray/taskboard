@@ -38,7 +38,7 @@ class MainPage(webapp2.RequestHandler):
             url = users.create_logout_url(self.request.uri)
             url_string = 'logout'
 
-            #generate user key
+            #gets user key
             myuser_key = ndb.Key('MyUser', user.user_id())
 
             #generates user from key
@@ -55,7 +55,7 @@ class MainPage(webapp2.RequestHandler):
             url = users.create_login_url(self.request.uri)
             url_string = 'login'
 
-        #assign template values to be rendered to the html page 
+        #assign template values to be rendered to the html page
         template_values = {
             'url' : url,
             'url_string' : url_string,
@@ -68,7 +68,7 @@ class MainPage(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
-# starts the web application and specify the full routing table here as well
+# specify the full routing table 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createtaskboard', CreateTaskBoard),

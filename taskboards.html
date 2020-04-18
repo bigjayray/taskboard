@@ -35,14 +35,14 @@
         <div class="card">
           <h5 class="card-header">Task Board</h5>
           <div class="card-body">
-            <h5 class="card-title">{{ taskboard.name }}</h5>
+            <h5 class="card-title">{{ taskboard.name }}
 
             <!-- Button trigger modal -->
             <!-- button to edit taskboard -->
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+            <button type="button" class="btn btn-primary ml-2" data-toggle="modal" data-target="#exampleModal">
               Edit Board
             </button>
-
+            </h5>
             <!-- Modal -->
             <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
@@ -89,8 +89,8 @@
                       <input type="submit" name="button" value="DeleteTaskboard" class="btn btn-primary">
                       <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
                     </form>
-                    {% endif %}
                     <small class="form-text text-muted">To delete taskboard all users and tasks must be removed.</small>
+                    {% endif %}
                   </div>
                 </div>
               </div>
@@ -101,13 +101,19 @@
             {% else %}
             <p class="card-text">Add a task to the task board</p>
             {% endif %}
-            <p>Taskboard Users:
+            <!-- show all users in taskboard -->
+            <p class="font-weight-bold">Taskboard Users:
               {% for i in taskboard.users %}
-              <span>{{ i.get().email_address }} </span>
+              {% if i == taskboard.creator %}
+              <span class="font-weight-normal text-danger">{{ i.get().email_address }} </span>
+              {% else %}
+              <span class="font-weight-normal">{{ i.get().email_address }} </span>
+              {% endif %}
               {% endfor %}
             </p>
+            <!-- allows only creator to add user  -->
             {% if permission %}
-            <form method="post" action="/taskboards" class="form">
+            <form method="post" action="/taskboards" class="form mb-4">
               <div class="input-group mb-3">
                 <select class="custom-select" name="user_id" required>
                   <option selected disabled>Invite User</option>
@@ -122,13 +128,9 @@
               <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
             </form>
             {% endif %}
-            <h6>Number of Tasks: {{ n_tasks }}</h6>
-            <h6>Number of Completed Tasks: {{ n_ctasks }}</h6>
-            <h6>Number of Active Tasks: {{ n_atasks }}</h6>
-            <h6>Number of Tasks Completed Today: {{ n_ctaskst }}</h6>
 
-            <form method="post" action="/taskboards" class="form">
-              <div class="input-group mb-3">
+            <form method="post" action="/taskboards" class="form mb-4">
+              <div class="input-group mb-1">
                 <input type="text" name="title" class="form-control" placeholder="title" aria-label="title" aria-describedby="button-addon2" required>
                 <input type="date" name="due_date" class="form-control" placeholder="due date" aria-label="due date" aria-describedby="button-addon2" required>
                 <select class="custom-select" name="assigned_user" required>
@@ -142,11 +144,22 @@
                 </div>
               </div>
               <input type="hidden" name="id" value="{{ taskboard.key.id() }}">
+            <small class="form-text text-muted">Cannot add tasks with same name</small>
             </form>
 
+            <!-- checks if tasks exist -->
             {% if taskboard.tasks %}
+
             <h5>Tasks</h5>
+
+            <!-- show stats on tasks -->
+            <h6>Number of Tasks: {{ n_tasks }}</h6>
+            <h6>Number of Completed Tasks: {{ n_ctasks }}</h6>
+            <h6>Number of Active Tasks: {{ n_atasks }}</h6>
+            <h6>Number of Tasks Completed Today: {{ n_ctaskst }}</h6>
+
             {% for i in taskboard.tasks %}
+            <!-- checks if task is completed -->
             {% if i.completion %}
             <form method="post" action="/taskboards" class="form">
               <div class="row">
@@ -154,8 +167,12 @@
                   <div class="input-group mb-3">
                     <input type="text" name="title" class="form-control" value="{{ i.title }}" aria-label="task_name" aria-describedby="button-addon2" disabled>
                     <input type="date" name="due_date" class="form-control" value="{{ i.due_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
+                    {% if i.assigned_user == None %}
+                    <input type="text" class="form-control" value="" aria-label="task_assigned_user" aria-describedby="button-addon2" disabled>
+                    {% else %}
                     <input type="text" class="form-control" value="{{ i.assigned_user.get().email_address }}" aria-label="task_assigned_user" aria-describedby="button-addon2" disabled>
                     <input type="text" name="assigned_user" class="form-control" value="{{ i.assigned_user.urlsafe() }}" aria-label="task_assigned_user" aria-describedby="button-addon2" hidden>
+                    {% endif %}
                     <input type="text" name="" class="form-control" value="Completed" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
                     <input type="text" name="" class="form-control" value="Date: {{ i.completion_date }}" aria-label="task_due_date" aria-describedby="button-addon2" disabled>
                     <div class="input-group-append">

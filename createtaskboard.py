@@ -1,3 +1,4 @@
+#imports 
 import webapp2
 import jinja2
 from google.appengine.api import users
@@ -80,7 +81,7 @@ class CreateTaskBoard(webapp2.RequestHandler):
                     return
 
             # add form values to taskboard attributes
-            taskboard.users.append(user_key)
+            taskboard.users.append(user_key) #creator of taskboard is made user so he can assign himself tasks
             taskboard.name = name
             taskboard.creator = user_key
 
