@@ -9,7 +9,6 @@ class MyUser(ndb.Model):
     email_address = ndb.StringProperty()
     taskboards = ndb.KeyProperty(kind='TaskBoard', repeated=True)
     taskboards_created = ndb.KeyProperty(kind='TaskBoard', repeated=True)
-    # task_assigned = ndb.KeyProperty(kind=Task, repeated=True)
 
 #TaskBoard class
 class TaskBoard(ndb.Model):
@@ -19,5 +18,3 @@ class TaskBoard(ndb.Model):
     users = ndb.KeyProperty(kind='MyUser', repeated=True)
     tasks = ndb.StructuredProperty(Task, repeated=True)
     creator = ndb.KeyProperty(kind='MyUser')
-
-    # logic a user can have multi taskboards and a taskboard can have multiple users
