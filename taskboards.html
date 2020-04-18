@@ -69,7 +69,7 @@
                     <div class="input-group mb-3">
                       <!-- list of users -->
                       <select class="custom-select" name="assigned_user" required>
-                        <option selected disabled>Select User</option>
+                        <option selected="true" disabled="disabled" value="">Select User</option>
                         {% for i in taskboard.users %}
                         <option value="{{ i.urlsafe() }}">{{ i.get().email_address }}</option>
                         {% endfor %}
@@ -97,15 +97,15 @@
             </div>
 
             {% if permission %}
-            <p class="card-text">invite a user or add a task to the task board</p>
+            <p class="card-text">You can invite a user add tasks to the Task board</p>
             {% else %}
-            <p class="card-text">Add a task to the task board</p>
+            <p class="card-text">You can add a task to the Task board</p>
             {% endif %}
             <!-- show all users in taskboard -->
             <p class="font-weight-bold">Taskboard Users:
               {% for i in taskboard.users %}
               {% if i == taskboard.creator %}
-              <span class="font-weight-normal text-danger">{{ i.get().email_address }} </span>
+              <span class="font-weight-bold text-danger">{{ i.get().email_address }} </span>
               {% else %}
               <span class="font-weight-normal">{{ i.get().email_address }} </span>
               {% endif %}
@@ -116,7 +116,7 @@
             <form method="post" action="/taskboards" class="form mb-4">
               <div class="input-group mb-3">
                 <select class="custom-select" name="user_id" required>
-                  <option selected disabled>Invite User</option>
+                  <option selected="true" disabled="disabled" value="">Invite User</option>
                   {% for i in q %}
                   <option value="{{ i.key.urlsafe() }}">{{ i.email_address }}</option>
                   {% endfor %}
@@ -129,12 +129,13 @@
             </form>
             {% endif %}
 
+            <!-- form to create a task -->
             <form method="post" action="/taskboards" class="form mb-4">
               <div class="input-group mb-1">
                 <input type="text" name="title" class="form-control" placeholder="title" aria-label="title" aria-describedby="button-addon2" required>
                 <input type="date" name="due_date" class="form-control" placeholder="due date" aria-label="due date" aria-describedby="button-addon2" required>
                 <select class="custom-select" name="assigned_user" required>
-                  <option selected disabled>Assign User</option>
+                  <option selected="true" disabled="disabled" value="">Assign User</option>
                   {% for i in taskboard.users %}
                   <option value="{{ i.urlsafe() }}">{{ i.get().email_address }}</option>
                   {% endfor %}
